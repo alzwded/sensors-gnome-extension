@@ -50,6 +50,9 @@ const PopupMenu = imports.ui.popupMenu;
 
 const _ = ExtensionUtils.gettext;
 
+const useExternalApp = true;
+let textThing = null;
+
 function mydirname() {
     let stack = new Error().stack.split('\n');
     let extensionStackLine;
@@ -114,7 +117,20 @@ class Indicator extends PanelMenu.Button {
             try {
                 //Main.notify(GLib.spawn_command_line_sync('pwd')[1].toString());
                 //Main.notify(mydirname());
-                GLib.spawn_command_line_async(`gjs "${mydirname()}/infowindow.js"`);
+                if(useExternalApp) {
+                    // this re-queries sensors every 2s, adding extra load to the machine
+                    GLib.spawn_command_line_async(`gjs "${mydirname()}/infowindow.js"`);
+                } else {
+                    // this would be cool to just have it on screen;
+                    // I need to clear it on click, though
+                    if(!textThing) {
+                        textThing = new St.Label({text: myState.lastOutput});
+                        Main.uiGroup.add_actor(textThing);
+                    }
+                    let monitor = Main.layoutManager.primaryMonitor;
+                    textThing.set_position(Math.floor(monitor.width / 2 - textThing.width / 2),
+                                           Math.floor(monitor.height / 2 - textThing.height / 2));
+                }
             } catch(e) {
                 logError(e);
             }
@@ -123,6 +139,14 @@ class Indicator extends PanelMenu.Button {
 
         this.menu.connect('open-state-changed', (self, open) => {
             if(open === true) {
+                // FIXME some other means of getting rid of the text?
+                //       I mean this should be its own window
+                if(!useExternalApp) {
+                    if(!textThing) {
+                        textThing = new St.Label({text: myState.lastOutput});
+                        Main.uiGroup.add_actor(textThing);
+                    }
+                }
                 const sync = false;
                 if(sync) {
                     let [, stdout, stderr, status] = GLib.spawn_command_line_sync("sensors");
@@ -181,6 +205,12 @@ class Extension {
     disable() {
         this._indicator.destroy();
         this._indicator = null;
+        if(!useExternalApp) {
+            if(textThing) {
+                Main.uiGroup.remove_actor(textThing);
+                textThing = null;
+            }
+        }
     }
 }
 
