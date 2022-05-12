@@ -1,0 +1,8 @@
+{
+  "name": "jaksensors",
+  "description": "extension that probes `sensors`",
+  "uuid": "sensors@alzwded.example.com",
+  "shell-version": [
+    "42"
+  ]
+}
