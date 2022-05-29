@@ -66,8 +66,8 @@ app.connect('startup', () => {
 
     let getSensors = () => {
         let proc = Gio.Subprocess.new(
-            ['sensors'],
-            //['bash', '-c', 'sleep 1 && sensors'],
+            //['sensors'],
+            ['bash', '-c', 'date && sensors'],
             Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE
         );
         proc.communicate_utf8_async(null, null, (proc, res) => {
