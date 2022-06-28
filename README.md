@@ -27,7 +27,7 @@ From that session, launch a terminal and `gnome-extensions enable sensors@alzwde
 TODO
 ====
 
-[ ] cleanup
-[ ] figure out how these things get packaged
-[ ] figure out how these things get submitted
-[ ] replace infowindow.js Gtk/Gjs app with St stuff that eliminates the need of packaging a separate app; otherwise, may as well launch `gnome-terminal -- watch sensors`
+- [ ] cleanup
+- [ ] figure out how these things get packaged
+- [ ] figure out how these things get submitted
+- [ ] replace infowindow.js Gtk/Gjs app with St stuff that eliminates the need of packaging a separate app; otherwise, may as well launch `gnome-terminal -- watch sensors`
