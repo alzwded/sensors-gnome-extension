@@ -43,12 +43,13 @@ const { GObject, St, GLib, Gio } = imports.gi;
 const Lang = imports.lang;
 const ByteArray = imports.byteArray;
 
+const Config = imports.misc.config;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 
-const _ = ExtensionUtils.gettext;
+const _ = ExtensionUtils.gettext || ((s) => s);
 
 const useExternalApp = true;
 let textThing = null;
@@ -118,8 +119,12 @@ class Indicator extends PanelMenu.Button {
                 //Main.notify(GLib.spawn_command_line_sync('pwd')[1].toString());
                 //Main.notify(mydirname());
                 if(useExternalApp) {
-                    // this re-queries sensors every 2s, adding extra load to the machine
-                    GLib.spawn_command_line_async(`gjs "${mydirname()}/infowindow.js"`);
+                    if(Config.PACKAGE_VERSION.startsWith("3\.")) {
+                        GLib.spawn_command_line_async('xterm -e watch sensors');
+                    } else {
+                        // this re-queries sensors every 2s, adding extra load to the machine
+                        GLib.spawn_command_line_async(`gjs "${mydirname()}/infowindow.js"`);
+                    }
                 } else {
                     // this would be cool to just have it on screen;
                     // I need to clear it on click, though

@@ -5,13 +5,15 @@ I wanted to write a Gnome extension and see how Gtk4 on JS is compared to Gtk2 o
 
 I think I got it working. gnome-shell 42.0.
 
+I got it working on 3.36.8 as well.
+
 How to install&test this thing
 ------------------------------
 
 ...according to how much I know thus far.
 
-1. Clone this.
-2. `ln -s sensors-gnome-extension ~/.local/share/gnome-shell/extensions/sensors@alzwded.example.com `
+1. Clone this and cd into it.
+2. `ln -s \`pwd\` ~/.local/share/gnome-shell/extensions/sensors@alzwded.example.com `
 3. Reboot?
 4. `gnome-extensions enable sensors@alzwded.example.com` (or whatever name you gave the symbolink
 5. It works?
