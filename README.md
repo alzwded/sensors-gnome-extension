@@ -11,7 +11,7 @@ How to install&test this thing
 ...according to how much I know thus far.
 
 1. Clone this.
-2. `ln -s ~/.local/share/gnome-shell/extensions/sensors@alzwded.example.com sensors-gnome-extension`
+2. `ln -s sensors-gnome-extension ~/.local/share/gnome-shell/extensions/sensors@alzwded.example.com `
 3. Reboot?
 4. `gnome-extensions enable sensors@alzwded.example.com` (or whatever name you gave the symbolink
 5. It works?
