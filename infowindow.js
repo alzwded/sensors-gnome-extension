@@ -15,8 +15,9 @@
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
-imports.gi.versions.Gtk = '4.0';
-const { Gtk, GLib, Gio } = imports.gi;
+import Gtk from 'gi://Gtk?version=4.0';
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
 
 Gtk.init();
 

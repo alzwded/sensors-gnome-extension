@@ -39,68 +39,27 @@ on wayland, run a nested gnome-shell
 
 const GETTEXT_DOMAIN = 'sensors-alzwded';
 
-const { GObject, St, GLib, Gio } = imports.gi;
-const Lang = imports.lang;
-const ByteArray = imports.byteArray;
+import GObject from 'gi://GObject';
+import St from 'gi://St';
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
 
-const Config = imports.misc.config;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Main = imports.ui.main;
-const PanelMenu = imports.ui.panelMenu;
-const PopupMenu = imports.ui.popupMenu;
-
-const _ = ExtensionUtils.gettext || ((s) => s);
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+import * as Config from 'resource:///org/gnome/shell/misc/config.js';
+import * as ExtensionUtils from 'resource:///org/gnome/shell/misc/extensionUtils.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 const useExternalApp = true;
 let textThing = null;
 
-function mydirname() {
-    let stack = new Error().stack.split('\n');
-    let extensionStackLine;
-
-    // Search for an occurrence of an extension stack frame
-    // Start at 1 because 0 is the stack frame of this function
-    for (let i = 1; i < stack.length; i++) {
-        if (stack[i].includes('/gnome-shell/extensions/')) {
-            extensionStackLine = stack[i];
-            break;
-        }
-    }
-    if (!extensionStackLine)
-        return null;
-
-    // The stack line is like:
-    //   init([object Object])@/home/user/data/gnome-shell/extensions/u@u.id/prefs.js:8
-    //
-    // In the case that we're importing from
-    // module scope, the first field is blank:
-    //   @/home/user/data/gnome-shell/extensions/u@u.id/prefs.js:8
-    let match = new RegExp('@(.+):\\d+').exec(extensionStackLine);
-    if (!match)
-        return null;
-
-    // local import, as the module is used from outside the gnome-shell process
-    // as well (not this function though)
-    let extensionManager = imports.ui.main.extensionManager;
-
-    let path = match[1];
-    let file = Gio.File.new_for_path(path);
-
-    // Walk up the directory tree, looking for an extension with
-    // the same UUID as a directory name.
-    while (file != null) {
-        let extension = extensionManager.lookup(file.get_basename());
-        if (extension !== undefined)
-            return file.get_path();
-        file = file.get_parent();
-    }
-
-    return null;
-}
-
-
 const Indicator = GObject.registerClass(
 class Indicator extends PanelMenu.Button {
+    constructor(path) {
+        super();
+        this.path = path;
+    }
     _init() {
         super._init(0.0, _('Sensors'));
 
@@ -123,7 +82,7 @@ class Indicator extends PanelMenu.Button {
                         GLib.spawn_command_line_async('xterm -e watch sensors');
                     } else {
                         // this re-queries sensors every 2s, adding extra load to the machine
-                        GLib.spawn_command_line_async(`gjs "${mydirname()}/infowindow.js"`);
+                        GLib.spawn_command_line_async(`gjs -m "${this.path}/infowindow.js"`);
                     }
                 } else {
                     // this would be cool to just have it on screen;
@@ -152,42 +111,28 @@ class Indicator extends PanelMenu.Button {
                         Main.uiGroup.add_actor(textThing);
                     }
                 }
-                const sync = false;
-                if(sync) {
-                    let [, stdout, stderr, status] = GLib.spawn_command_line_sync("sensors");
-                    if(status !== 0 || !(stdout instanceof Uint8Array)) {
-                        // error happened
-                        log('failed to spawn sensors');
-                        item.label.text = 'error';
-                        return;
-                    } else {
-                        let text = ByteArray.toString(stdout);
-                        item.label.text = 'ok';
-                    }
-                } else {
-                    let proc = Gio.Subprocess.new(
-                        ['sensors'],
-                        //['bash', '-c', 'sleep 1 && sensors'],
-                        Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE
-                    );
-                    proc.communicate_utf8_async(null, null, (proc, res) => {
-                        try {
-                            let[, stdout, stderr] = proc.communicate_utf8_finish(res);
-                            if(proc.get_successful()) {
-                                myState.lastOutput = stdout;
-                                let lines = myState.lastOutput.split("\n").filter( line => line.includes("°C"));
-                                //log(`I have ${lines.length} temperatures`);
-                                item.label.text = lines.join("\n");
-                            } else {
-                                log('failed to spawn sensors & read output');
-                                item.label.text = `error spawning 'sensors'`;
-                            }
-                        } catch(e) {
-                            logError(e);
-                        } finally {
+                let proc = Gio.Subprocess.new(
+                    ['sensors'],
+                    //['bash', '-c', 'sleep 1 && sensors'],
+                    Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE
+                );
+                proc.communicate_utf8_async(null, null, (proc, res) => {
+                    try {
+                        let[, stdout, stderr] = proc.communicate_utf8_finish(res);
+                        if(proc.get_successful()) {
+                            myState.lastOutput = stdout;
+                            let lines = myState.lastOutput.split("\n").filter( line => line.includes("°C"));
+                            //log(`I have ${lines.length} temperatures`);
+                            item.label.text = lines.join("\n");
+                        } else {
+                            log('failed to spawn sensors & read output');
+                            item.label.text = `error spawning 'sensors'`;
                         }
-                    });
-                }
+                    } catch(e) {
+                        logError(e);
+                    } finally {
+                    }
+                });
 
                 //Main.notify(_('clicked'));
             }
@@ -195,15 +140,14 @@ class Indicator extends PanelMenu.Button {
     }
 });
 
-class Extension {
+export default class MyExtension extends Extension{
     constructor(uuid) {
+        super(uuid);
         this._uuid = uuid;
-
-        ExtensionUtils.initTranslations(GETTEXT_DOMAIN);
     }
 
     enable() {
-        this._indicator = new Indicator();
+        this._indicator = new Indicator(this.path);
         Main.panel.addToStatusArea(this._uuid, this._indicator);
     }
 
@@ -217,8 +161,4 @@ class Extension {
             }
         }
     }
-}
-
-function init(meta) {
-    return new Extension(meta.uuid);
 }
