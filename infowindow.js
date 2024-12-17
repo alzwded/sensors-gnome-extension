@@ -18,23 +18,9 @@
 import Gtk from 'gi://Gtk?version=4.0';
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
+const mydirname = import.meta.dirname;
 
 Gtk.init();
-
-function mydirname() {
-    let stack = (new Error()).stack,
-        stackLine = stack.split('\n')[1],
-        coincidence, path, file;
-
-    if (!stackLine) throw new Error('Could not find current file (1)');
-
-    coincidence = new RegExp('@(.+):\\d+').exec(stackLine);
-    if (!coincidence) throw new Error('Could not find current file (2)');
-
-    path = coincidence[1];
-    file = Gio.File.new_for_path(path);
-    return file.get_parent().get_path();
-}
 
 let app = new Gtk.Application();
 app.title = 'sensors';
@@ -98,7 +84,7 @@ app.connect('startup', () => {
     getSensors();
 
     try {
-        app.mywin.set_icon_from_file(mydirname() + '/icon.png');
+        app.mywin.set_icon_from_file(mydirname + '/icon.png');
     } catch(err) {
         // something something .desktop file? IDK; IDK how to make it work
         app.mywin.set_icon_name('temperature-symbolic');
