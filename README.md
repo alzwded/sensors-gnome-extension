@@ -3,9 +3,9 @@ sensors Gnome extension
 
 I wanted to write a Gnome extension and see how Gtk4 on JS is compared to Gtk2 on C from more than a decade ago.
 
-I think I got it working. gnome-shell 42.0.
+Run on Gnome 45+.
 
-I got it working on 3.36.8 as well.
+An earlier commit works for versions from Gnome 3.36 through Gnome 44.
 
 How to install&test this thing
 ------------------------------
