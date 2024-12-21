@@ -41,7 +41,7 @@ app.connect('startup', () => {
 
     let buffer = new Gtk.TextBuffer();
     let text = `loading`;
-    buffer.set_text(text, text.length);
+    buffer.set_text(text, -1);
     let label = new Gtk.TextView();
     label.set_buffer(buffer);
     label.set_editable(false);
@@ -67,11 +67,12 @@ app.connect('startup', () => {
                     log(`I have ${lines.length} temperatures`);
                     const ooo = lines.join("\n");
                     */
-                    buffer.set_text(ooo, ooo.length);
+                    //buffer.set_text(ooo, new TextEcoder().encode(ooo).length); // but that's just silly
+                    buffer.set_text(ooo, -1);
                 } else {
                     log('failed to spawn sensors & read output');
                     const msg = `error spawning 'sensors'`;
-                    buffer.set_text(msg, msg.length);;
+                    buffer.set_text(msg, -1);
                 }
             } catch(e) {
                 logError(e);
