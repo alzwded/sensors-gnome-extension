@@ -21,7 +21,8 @@ How to install&test this thing
 Instead of rebooting, one can run 
 
 ```sh
-dbus-run-session -- gnome-shell --nested --wayland
+# install mutter-dev-bin
+env G_MESSAGES_DEBUG=all SHELL_DEBUG=all dbus-run-session -- gnome-shell --devkit --wayland |& grep alzwded
 ```
 
 From that session, launch a terminal and `gnome-extensions enable sensors@alzwded.example.com`. Close session. Launch again. Extension should be there if there weren't any hiccups.
